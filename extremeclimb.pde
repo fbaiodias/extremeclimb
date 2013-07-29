@@ -28,7 +28,7 @@ float streetY = 0;
 float streetSpeed = 1.5;
 
 int levelTimeout = 2000;
-int playersTimeout = 100;
+int playersTimeout = 200;
 long ticksTime = 0;
 int frame = 0;
 
@@ -41,9 +41,17 @@ boolean stuffHidden = true;
 
 int frame = 0;
 
+PFont fontA;
+
 void setup()
 {
   size(1366,768);
+  
+  background(157,221,216);
+  fill(222,249,247);
+  fontA = loadFont("Arial");
+  textFont(fontA, 120);
+  text("Loading...", 350, 350);
 
   startImg = loadImage("assets/start.png");
   endImg = loadImage("assets/end.png");
@@ -84,14 +92,14 @@ void draw()
   if(screenName == "start")
   {
     set(0, 0,startImg);
-    /*if(stuffHidden == true)
+    if(stuffHidden == true)
     {
       showStuff();
       stuffHidden = false;
     }
+    fill(0);
     textSize(40);
     text("Click to Play", 580,750);
-    */
   }
   else if(screenName == "game")
   {
@@ -100,12 +108,27 @@ void draw()
   else if(screenName == "end")
   {
     set(0, 0,endImg);
+    
+    textFont(fontA, 30);
+    fill(200,200,0);
+    if (player[0].Score > player[1].Score && player[0].Score > player[2].Score)
+      text("WINNER!", 600, 700);
+    else if (player[1].Score > player[0].Score && player[1].Score > player[2].Score)
+      text("WINNER!", 1000, 440);
+    else if (player[2].Score > player[1].Score && player[2].Score > player[0].Score)
+      text("WINNER!", 1230, 700);
   }
 }
 
 void gameLoop()
 {
   updateBackground();
+   
+  if(controlsHidden == true)
+  {
+    showControls();
+    controlsHidden = false;
+  }
   
   if(time < levelTimeout)
   {
@@ -115,7 +138,13 @@ void gameLoop()
       barrel[i].UpdateImage();
     
       for (int o=0; o<player.length; o++)
-        if(testCollision(player[o], barrel[i])) player[o].Hurt();
+      {
+        if(player[o].Active)
+        {
+          if(testCollision(player[o], barrel[i])) player[o].Hurt();
+          if(testAvoid(player[o], barrel[i])) player[o].Avoid();
+        }
+      }
     }
   }
   else
@@ -132,10 +161,20 @@ void gameLoop()
     
   for (int i=0; i<player.length; i++)
   {
-    player[i].UpdatePosition(time);
-    player[i].UpdateImage();
-  }
+    if(player[i].Active)
+    {
+      player[i].UpdatePosition(time);
+      player[i].UpdateImage();
+    }
     
+    if (time > playersTimeout && !player[i].Played)
+      player[i].Hide();
+  }
+  
+  //  Update TextBlocks
+  printMessage("<b>Player One:</b> " + str(player[0].Score) + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Player Two:</b>  " +str(player[1].Score) + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Player Three:</b>  " +str(player[2].Score));
+  
+  
   time++;
 }
 
@@ -152,16 +191,41 @@ void pauseGame()
     screenName = "pause";
 }
 
+void restartGame()
+{
+  // Restart Players Variables
+  for (int i = 0; i < player.length; i++)
+  {
+    player[i].Active = true;
+    player[i].Played = false;
+    player[i].Score = 0;
+    player[i].SetPosition(3*width/4 - i*50, 6*height/8 + i*25);
+  }
+  
+  time = 0;
+  
+  screenName = "game";
+}
+
+
 void mouseClicked() 
 {
   if(screenName == "start")
     startGame();
   else if(screenName == "game")
   {
-
+    if(mouseX < screenWidth/3)
+      player[0].Jump();
+    else if (mouseX > 2*(screenWidth/3))
+      player[2].Jump();
+    else
+      player[1].Jump();
   }
+  else if(screenName == "end")
+    restartGame();
+  else if(screenName == "pause")
+    pauseGame();
 }
-
 
 void keyTyped()
 {
@@ -187,6 +251,17 @@ boolean testCollision(Player p, Barrel b)
                     valueInRange(b.Y, p.Y, p.Y + p.Height);
 
     return xOverlap && yOverlap;
+}
+
+boolean testAvoid(Player p, Barrel b)
+{
+    boolean xOverlap = valueInRange(p.X, b.X, b.X + b.Width) ||
+                    valueInRange(b.X, p.X, p.X + p.Width);
+
+    boolean yOverlap = valueInRange(p.Y, b.Y, b.Y + b.Height) ||
+                    valueInRange(b.Y, p.Y, p.Y + p.Height);
+
+    return xOverlap && !yOverlap;
 }
 
 void updateBackground()

@@ -3,7 +3,7 @@
 	<head>
 		<title>Extreme Climb!</title>
 		<link rel="shortcut icon" type="image/x-icon" href="assets/favicon.ico">
-		<meta property="og:image" content="http://web.ist.utl.pt/~francisco.baio.dias/games/extremefall/assets/logo.png"/>
+		<meta property="og:image" content="http://web.ist.utl.pt/~francisco.baio.dias/games/extremeclimb/assets/logo.png"/>
 		<script src="processing-1.4.1.min.js"></script>
 		<link rel="stylesheet" href="styles.css" type="text/css" media="screen">
 		<script type="application/javascript">
@@ -102,8 +102,40 @@
 		</script>
 	</head>
 	<body scroll="no" style="overflow: hidden">
+		<script type="application/javascript">
+			function restart(id) {
+				var pjs = Processing.getInstanceById(id);
+				pjs.restartGame(); 
+				document.getElementById("gameCanvas").focus();
+			}
+			
+			function pause(id) {
+				var pjs = Processing.getInstanceById(id);
+				pjs.pauseGame(); 
+				document.getElementById("gameCanvas").focus();
+			}
+
+			var printMessage = function (msg) {
+				document.getElementById('msg').innerHTML = msg;
+			};
+
+			var showControls = function () {
+				document.getElementById('buttons').style.visibility  = "visible";
+				document.getElementById('msg').style.visibility  = "visible";
+			};
+
+			var showStuff = function () {
+				document.getElementById('github').style.visibility  = "visible";
+			};
+		</script>
 		<div id="gameArea">
 			<canvas id="gameCanvas" tabindex="1" data-processing-sources="player.pde barrel.pde extremeclimb.pde"></canvas>
+		</div>
+		<div id="msg" class="scores">Click to play</div>
+		<a href="https://github.com/XicoMBD/extremeclimb" target="_blank"><img id="github" src="assets/github.png" alt="Fork me on GitHub"></a>
+		<div id="buttons">
+			<a onclick="pause('gameCanvas')"><img src="assets/pause.png" alt="Pause Game" title="Pause Game"></a>
+			<a onclick="restart('gameCanvas')"><img src="assets/restart.png" alt="Restart Game" title="Restart Game"></a>
 		</div>
 	</body>
 	
