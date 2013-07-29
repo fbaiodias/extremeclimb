@@ -4,10 +4,12 @@
 /* @pjs preload="assets/playerOne0.png, assets/playerOne1.png, assets/playerOneJump.png, assets/playerOneHurt.png";  */
 /* @pjs preload="assets/playerTwo0.png, assets/playerTwo1.png, assets/playerTwoJump.png, assets/playerTwoHurt.png";  */
 /* @pjs preload="assets/playerThree0.png, assets/playerThree1.png, assets/playerThreeJump.png, assets/playerThreeHurt.png";  */
+/* @pjs preload="assets/keyQ0.png, assets/keyQ1.png, assets/keyV0.png, assets/keyV1.png, assets/keyP0.png, assets/keyP1.png";  */
 
 long time = 0;
 Player[] player = new Player[3];
 Barrel[] barrel = new Barrel[3];
+Sprite[] keys = new Sprite[3];
 
 PImage startImg;
 PImage endImg;
@@ -85,6 +87,13 @@ void setup()
   streetX = -width;
   streetY = -height/2;
   streetImg = loadImage("assets/street.png");
+  
+  String[] array = new String[]{"assets/keyQ0.png", "assets/keyQ1.png"};
+  keys[0] = new Sprite (array, 10);
+  array = {"assets/keyV0.png", "assets/keyV1.png"}
+  keys[1] = new Sprite (array,10);
+  array = {"assets/keyP0.png", "assets/keyP1.png"}
+  keys[2] = new Sprite (array, 10);
 }
 
 void draw()
@@ -169,8 +178,28 @@ void gameLoop()
     
     if (time > playersTimeout && !player[i].Played)
       player[i].Hide();
+      
+    if (time < playersTimeout && !player[i].Played)
+    {
+      noStroke();
+      if(i == 0) 
+        fill(83,121,35,50);
+      else if(i == 1) 
+        fill(198,100,146,50);
+      else if(i == 2) 
+        fill(54,131,197,50);
+      rect(i*(width/3), 0, width/3, height);
+    }
   }
   
+  for (int i=0; i<player.length; i++)
+  {
+    if(time < playersTimeout && !player[i].Played)
+    {
+      keys[i].SetPosition(player[i].X-20, player[i].Y);
+      keys[i].Update();
+    }
+  }
   //  Update TextBlocks
   printMessage("<b>Player One:</b> " + str(player[0].Score) + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Player Two:</b>  " +str(player[1].Score) + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Player Three:</b>  " +str(player[2].Score));
   
@@ -214,9 +243,9 @@ void mouseClicked()
     startGame();
   else if(screenName == "game")
   {
-    if(mouseX < screenWidth/3)
+    if(mouseX < width/3)
       player[0].Jump();
-    else if (mouseX > 2*(screenWidth/3))
+    else if (mouseX > 2*(width/3))
       player[2].Jump();
     else
       player[1].Jump();
